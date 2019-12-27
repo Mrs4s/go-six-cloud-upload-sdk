@@ -3,6 +3,7 @@ package sixcloudUploader
 import (
 	"bytes"
 	"github.com/tidwall/gjson"
+	"io"
 	"net/http"
 	"os"
 	"strconv"
@@ -127,7 +128,7 @@ func (block *UploadTaskBlock) createBlock(cli *UploadClient, ch chan bool, retry
 		panic("http response not be successful.")
 	}
 	i, err := resp.Body.Read(buff)
-	if err != nil {
+	if err != nil && err != io.EOF {
 		panic("read response stream failed.")
 	}
 	token := gjson.ParseBytes(buff[:i])
@@ -197,7 +198,7 @@ func (block *UploadTaskBlock) chunkUpload(cli *UploadClient, ch chan bool, retry
 			panic("http response not be successful.")
 		}
 		i, err := resp.Body.Read(buff)
-		if err != nil {
+		if err != nil && err != io.EOF {
 			panic("read response stream failed.")
 		}
 		token := gjson.ParseBytes(buff[:i])
