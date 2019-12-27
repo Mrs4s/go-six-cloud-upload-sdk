@@ -15,6 +15,7 @@ type UploadClient struct {
 	MaxRetry       int
 	OnUploadFailed func(*UploadClient)
 	OnUploaded     func(*UploadClient)
+	LogAction      func(string)
 
 	client *http.Client
 }
@@ -89,6 +90,9 @@ func (block *UploadTaskBlock) createBlock(cli *UploadClient, ch chan bool, retry
 	}
 	defer func() {
 		if pan := recover(); pan != nil {
+			if cli.LogAction != nil {
+				cli.LogAction(pan.(string))
+			}
 			go block.createBlock(cli, ch, rt+1)
 		}
 	}()
@@ -144,6 +148,9 @@ func (block *UploadTaskBlock) createBlock(cli *UploadClient, ch chan bool, retry
 func (block *UploadTaskBlock) chunkUpload(cli *UploadClient, ch chan bool, retry ...int) {
 	defer func() {
 		if pan := recover(); pan != nil {
+			if cli.LogAction != nil {
+				cli.LogAction(pan.(string))
+			}
 			rt := 1
 			if len(retry) > 0 {
 				rt = retry[0] + 1
