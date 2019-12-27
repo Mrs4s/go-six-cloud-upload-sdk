@@ -140,6 +140,7 @@ func (block *UploadTaskBlock) createBlock(cli *UploadClient, ch chan bool, retry
 	block.lastChunkOffset = token.Get("offset").Int()
 	if int64(flen) < ChunkSize {
 		block.Uploaded = true
+		block.Uploading = false
 		ch <- true
 		return
 	}
@@ -175,6 +176,7 @@ func (block *UploadTaskBlock) chunkUpload(cli *UploadClient, ch chan bool, retry
 		flen, _ := file.Read(buff)
 		if flen == 0 {
 			block.Uploaded = true
+			block.Uploading = false
 			ch <- true
 			return
 		}
@@ -251,7 +253,7 @@ func (cli *UploadClient) mkfile(retry ...int) (context string, ok bool) {
 			panic("http response not be successful.")
 		}
 		i, err := resp.Body.Read(buff)
-		if err != nil {
+		if err != nil && err != io.EOF {
 			panic("read response stream failed.")
 		}
 		token := gjson.ParseBytes(buff[:i])
