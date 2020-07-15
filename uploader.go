@@ -165,6 +165,7 @@ func (block *UploadTaskBlock) chunkUpload(cli *UploadClient, ch chan bool, retry
 		if err != nil {
 			panic("can't open file " + cli.Info.File)
 		}
+                defer file.Close()
 		_, _ = file.Seek(block.BeginOffset+block.lastChunkOffset, 0)
 		var buffLen int64
 		if block.BeginOffset+block.lastChunkOffset+ChunkSize > block.EndOffset {
